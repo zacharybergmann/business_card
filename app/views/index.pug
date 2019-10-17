@@ -1,5 +1,12 @@
-html
+doctype html
+html(lang="en")
   head
     title= title
+    link(rel='stylesheet', href='/style.css')
   body
-    h1= message
+    .gridContainer
+      form.form(action="/parseOcrText", method=POST)
+        input#inputOcrText.input(type="text", name="input-ocr" value="")
+        button#submit.parseButton(type="submit", value="Submit")
+        input#parsedText.input(type="text", name="output-ocr" value="")
+    
