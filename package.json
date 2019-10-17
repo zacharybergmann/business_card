@@ -1,0 +1,19 @@
+{
+  "name": "business_card",
+  "version": "1.0.0",
+  "description": "A business card application that reads OCR business contacts and outputs the desired extracted fields",
+  "main": "server.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zacharybergmann/business_card.git"
+  },
+  "author": "Zachary Bergmann",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/zacharybergmann/business_card/issues"
+  },
+  "homepage": "https://github.com/zacharybergmann/business_card#readme"
+}
