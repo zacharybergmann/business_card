@@ -5,8 +5,12 @@ const morgan = require('morgan');
 const PORT = process.env.PORT || 8000;
 const app = express();
 
+app.use(morgan('dev'));
+app.set('views', './app/views');
+app.set('view engine', 'pug');
+
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.render('index', { title: 'Hey', message: 'Hello there!' });
 });
 
 app.listen(PORT, (err) => {
@@ -14,5 +18,3 @@ app.listen(PORT, (err) => {
     process.stdout.write(`Server is running on port ${PORT}!\n`);
   }
 });
-
-app.use(morgan('dev'));

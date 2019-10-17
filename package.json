@@ -2,13 +2,13 @@
   "name": "business_card",
   "version": "1.0.0",
   "description": "A business card application that reads OCR business contacts and outputs the desired extracted fields",
-  "main": "app/server.js",
+  "main": "app/server/server.js",
   "engines": {
     "npm": ">=5",
     "node": ">=10.15.0"
   },
   "scripts": {
-    "start": "node app/server.js",
+    "start": "node app/server/server.js",
     "lint": "eslint app/**/*.js",
     "test": "cross-env BABEL_ENV=cjs nyc --reporter=text --reporter=html mocha \"app/**/*.test.js\" --require @babel/register"
   },
@@ -29,7 +29,6 @@
     "@babel/register": "^7.6.0",
     "chai": "^4.2.0",
     "cross-env": "^6.0.3",
-    "dotenv": "^8.2.0",
     "eslint": "^6.5.1",
     "eslint-config-airbnb-base": "^14.0.0",
     "mocha": "^6.2.1",
@@ -64,8 +63,10 @@
     "check-coverage": true
   },
   "dependencies": {
+    "dotenv": "^8.2.0",
     "eslint-plugin-import": "^2.18.2",
     "express": "^4.17.1",
-    "morgan": "^1.9.1"
+    "morgan": "^1.9.1",
+    "pug": "^2.0.4"
   }
 }

@@ -1,4 +1,4 @@
-const assert = require('chai').assert;
+const { assert } = require('chai');
 
 describe('Server Application', () => {
   it('should exist', () => {
