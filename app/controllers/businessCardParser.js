@@ -1,3 +1,9 @@
+const companiesList = require('../../resources/companies.json');
+const faxList = require('../../resources/fax.json');
+const statesList = require('../../resources/states.json');
+const roadsList = require('../../resources/roads.json');
+const phoneList = require('../../resources/phone.json');
+const jobTitlesList = require('../../resources/jobTitles.json');
 const ContactInfo = require('../models/ContactInfo');
 
 /**
@@ -12,62 +18,98 @@ const businessCardParser = {
    * and emailAddress
    * @returns {ContactInfo} A ContactInfo instance that contains the desired information
    */
-  getContactInfo(doc) {
-    // takes a sequence of characters to extract the name, phoneNumber, and emailAddress from
+  getContactInfo: (doc) => {
+    const sentences = businessCardParser.getSentences(doc);
+    console.log(sentences, 'these muh sentences');
+    const { name, emailAddress, phoneNumber } = businessCardParser.classifyTextArr(sentences);
+    // should clean up to exactly what should be returned then output as ContactInfo object (ie. trim email, clean symbols from phone number)
+    console.log(name, emailAddress, phoneNumber);
     return new ContactInfo(
-      this.extractName(doc),
-      this.extractPhoneNumber(doc),
-      this.extractEmailAddress(doc),
+      name[0],
+      businessCardParser.cleanPhoneNumber(phoneNumber[0]),
+      businessCardParser.cleanEmailAddress(emailAddress[0]),
     );
   },
 
-  /**
-   * The extractName method takes non-homogeneous business card text and parses a person's
-   * name from it
-   * @param {String} doc A sequence of characters that should contain a person's name
-   * @returns {String} A person's name
-   */
-  extractName(doc) {
-    // Sources to find a person's name parser
-    // https://www.regextester.com/93648
-    // should also remove numbers, and normal patterns for company, etc???
-    // instead use better method to recognize person names???
-    const regex = new RegExp(/^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/, 'gm'); // assumes English alphabet, no foreign names with symbols, etc
-    const data = doc.match(regex)[0];
-    return data;
+  getSentences: (doc) => {
+    return doc.split('\n');
   },
 
-  /**
-   * The extractPhoneNumber method takes non-homogeneous business card text and parses a person's
-   * phone number from it
-   * @param {String} doc A sequence of characters that should contain a person's phone number
-   * @returns {String} A person's phone number with only digits, no spaces or special characters
-   */
-  extractPhoneNumber(doc) {
-    // Sources for solution to extract domestic and international phone numbers using regex
-    // https://stackoverflow.com/questions/3868753/find-phone-numbers-in-python-script
-    // https://zapier.com/blog/extract-links-email-phone-regex/
-    const regex = new RegExp(/(?:(?:\+?([1-9]|[0-9][0-9]|[0-9][0-9][0-9])\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([0-9][1-9]|[0-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?/, 'g');
-    const data = doc.match(regex)[0].replace(/[^0-9]/g, '');
-    return data;
+  classifyTextArr: (sentences) => {
+    const classifiedData = {
+      name: businessCardParser.regexMatchName(sentences),
+      emailAddress: businessCardParser.regexMatchEmailAddress(sentences),
+      phoneNumber: businessCardParser.regexMatchPhoneNumber(sentences),
+    };
+    // filter results based on whitelist/blacklist for field
+    classifiedData.phoneNumber = businessCardParser.applyBlackList(
+      [].concat(faxList, statesList, roadsList),
+      classifiedData.phoneNumber,
+    );
+    classifiedData.name = businessCardParser.applyBlackList(
+      [].concat(companiesList, jobTitlesList),
+      classifiedData.name,
+    );
+
+    const phoneNumberWhiteResults = businessCardParser.applyWhiteList(
+      phoneList,
+      classifiedData.phoneNumber,
+    );
+
+    if (phoneNumberWhiteResults.length > 0) {
+      classifiedData.phoneNumber = phoneNumberWhiteResults;
+    }
+    return classifiedData;
   },
 
-  /**
-   * The extractEmailAddress method takes non-homogeneous business card text and parses a person's
-   * email address from it
-   * @param {String} doc A sequence of characters that should contain a person's email address
-   * @returns {String} A person's email address
-   */
-  extractEmailAddress(doc) {
-    // Source to find most complete solution for standard email addresses, sub-domains,
-    // and TLDs using regex (email and domain must be in standard English)
-    // General Email Regex (RFC 5322 Official Standard)
-    // http://emailregex.com/
-    // https://zapier.com/blog/extract-links-email-phone-regex/
-    // eslint-disable-next-line no-control-regex
-    const regex = new RegExp(/(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/, 'g');
-    const data = doc.match(regex)[0];
-    return data;
+  // could generalize and use new regexp to handle a regex and a string match the same way through same function
+  // should also handle zip code regex removal
+
+  regexMatchName: (sentences) => {
+    const nameRegex = /^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/gm;
+    return sentences.filter((sent) => (new RegExp(nameRegex)).test(sent));
+  },
+  regexMatchPhoneNumber: (sentences) => {
+    const phoneNumberRegex = /(?:(?:\+?([1-9]|[0-9][0-9]|[0-9][0-9][0-9])\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([0-9][1-9]|[0-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?/g;
+    return sentences.filter((sent) => (new RegExp(phoneNumberRegex)).test(sent));
+  },
+  regexMatchEmailAddress: (sentences) => {
+    const emailAddressRegex = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/g;
+    return sentences.filter((sent) => (new RegExp(emailAddressRegex)).test(sent));
+  },
+
+  cleanEmailAddress: (str) => {
+    // get capture email, drop anything else
+    const emailCleanRegex = /\S+@\S+/;
+    // should probably error handle no match
+    return str.match(emailCleanRegex)[0];
+  },
+  cleanPhoneNumber: (str) => {
+    return str.replace(/[^0-9]/g, '');
+  },
+
+  applyBlackList: (blackList, sentences) => {
+    return sentences.filter((sent) => {
+      let isValid = true;
+      blackList.forEach((item) => {
+        if (sent.toLowerCase().includes(item)) {
+          isValid = false;
+        }
+      });
+      return isValid;
+    });
+  },
+
+  applyWhiteList: (whiteList, sentences) => {
+    return sentences.filter((sent) => {
+      let isMatch = false;
+      whiteList.forEach((item) => {
+        if (sent.toLowerCase().includes(item)) {
+          isMatch = true;
+        }
+      });
+      return isMatch;
+    });
   },
 };
 
