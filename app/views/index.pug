@@ -2,11 +2,16 @@ doctype html
 html(lang="en")
   head
     title= title
-    link(rel='stylesheet', href='/style.css')
+    link(rel='stylesheet', href='/stylesheets/style.css')
   body
-    .gridContainer
-      form.form(action="/parseOcrText", method=POST)
-        input#inputOcrText.input(type="text", name="input-ocr" value="")
-        button#submit.parseButton(type="submit", value="Submit")
-        input#parsedText.input(type="text", name="output-ocr" value="")
-    
+    div#container.gridContainer
+      div.ocrContainer
+        div.inputTextContainer
+          textarea.ocrInputTextArea(rows=5, cols=40, name="input-ocr" required placeholder="Paste the OCR business card text to parse here...")
+          button.parseButton(type="button" onClick="parseOcr();") Submit
+        div.outputTextContainer
+          ul.outputTextList
+  script(src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.0.0/fetch.min.js")
+  script(src="/scripts/parseOcr.js")
+    //- script
+    //-   |  alert(document.getElementById('inputOcrText'))
