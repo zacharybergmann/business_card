@@ -15,7 +15,7 @@ class ContactInfo {
   }
 
   /**
-   * Get the name property
+   * The getName method gets the name property from a contactInfo instance
    * @returns {String} The contactInfo object name property
    */
   getName() {
@@ -23,7 +23,7 @@ class ContactInfo {
   }
 
   /**
-   * Get the phone number property
+   * The getPhoneNumber method gets the phoneNumber property from a contactInfo instance
    * @returns {String} The contactInfo object phoneNumber property
    */
   getPhoneNumber() {
@@ -31,7 +31,7 @@ class ContactInfo {
   }
 
   /**
-   * Get the email address property
+   * The getEmailAddress method gets the emailAddress property from a contactInfo instance
    * @returns {String} The contactInfo object emailAddress property
    */
   getEmailAddress() {

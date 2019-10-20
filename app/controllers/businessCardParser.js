@@ -36,22 +36,26 @@ const businessCardParser = {
   },
 
   classifyTextArr: (sentences) => {
+    const nameRegex = /^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/gm;
+    const phoneNumberRegex = /(?:(?:\+?([1-9]|[0-9][0-9]|[0-9][0-9][0-9])\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([0-9][1-9]|[0-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?/g;
+    // eslint-disable-next-line no-control-regex
+    const emailAddressRegex = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/g;
     const classifiedData = {
-      name: businessCardParser.regexMatchName(sentences),
-      emailAddress: businessCardParser.regexMatchEmailAddress(sentences),
-      phoneNumber: businessCardParser.regexMatchPhoneNumber(sentences),
+      name: businessCardParser.filterByRegex(sentences, nameRegex),
+      emailAddress: businessCardParser.filterByRegex(sentences, emailAddressRegex),
+      phoneNumber: businessCardParser.filterByRegex(sentences, phoneNumberRegex),
     };
     // filter results based on whitelist/blacklist for field
-    classifiedData.phoneNumber = businessCardParser.applyBlackList(
+    classifiedData.phoneNumber = businessCardParser.applyBlacklist(
       [].concat(faxList, statesList, roadsList),
       classifiedData.phoneNumber,
     );
-    classifiedData.name = businessCardParser.applyBlackList(
+    classifiedData.name = businessCardParser.applyBlacklist(
       [].concat(companiesList, jobTitlesList),
       classifiedData.name,
     );
 
-    const phoneNumberWhiteResults = businessCardParser.applyWhiteList(
+    const phoneNumberWhiteResults = businessCardParser.applyWhitelist(
       phoneList,
       classifiedData.phoneNumber,
     );
@@ -62,40 +66,55 @@ const businessCardParser = {
     return classifiedData;
   },
 
-  // could generalize and use new regexp to handle a regex and a string match the same way through
-  // same function should also handle zip code regex removal
+  /**
+   * The filterByRegex method takes an array of sentence strings and returns only the sentences
+   * that match a specific regex
+   * @param {Array} sentences An array of strings that should be tested
+   * @param {Object} regex A regex pattern to apply on strings
+   * @returns An array of sentences that did match the regex pattern
+   */
+  filterByRegex: (sentences, regex) => sentences.filter((str) => (new RegExp(regex)).test(str)),
 
-  regexMatchName: (sentences) => {
-    const nameRegex = /^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/gm;
-    return sentences.filter((sent) => (new RegExp(nameRegex)).test(sent));
-  },
-  regexMatchPhoneNumber: (sentences) => {
-    const phoneNumberRegex = /(?:(?:\+?([1-9]|[0-9][0-9]|[0-9][0-9][0-9])\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([0-9][1-9]|[0-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?/g;
-    return sentences.filter((sent) => (new RegExp(phoneNumberRegex)).test(sent));
-  },
-  regexMatchEmailAddress: (sentences) => {
-    // eslint-disable-next-line no-control-regex
-    const emailAddressRegex = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/g;
-    return sentences.filter((sent) => (new RegExp(emailAddressRegex)).test(sent));
-  },
-
+  /**
+   * The cleanEmailAddress method captures only the email address from a string and returns it
+   * @param {String} str A string that should have an email address within it
+   * @returns {String} A string with all only the email address in it
+   */
   cleanEmailAddress: (str) => {
-    // get capture email, drop anything else
+    // grab email address only, drop anything else on that line
     const emailCleanRegex = /\S+@\S+/;
-    // should probably error handle no match
-    return str.match(emailCleanRegex)[0];
+    const emailMatches = str.match(emailCleanRegex);
+    if (emailMatches.length === 0) {
+      return '';
+    }
+    return emailMatches[0];
   },
 
+  /**
+   * The cleanPhoneNumber method removes all characters that are not numbers
+   * from the argument string
+   * @param {String} str A string that should have a phone number within it
+   * @returns {String} A string with all non-numerics and spaces removed,
+   * this should not be a string of only numbers
+   */
   // eslint-disable-next-line arrow-body-style
   cleanPhoneNumber: (str) => {
     return str.replace(/[^0-9]/g, '');
   },
 
+  /**
+   * The applyBlacklist method takes a blacklist array of strings and an array of sentences and
+   * returns only the sentences that do not match any of the strings in the blacklist
+   * @param {Array} blacklist An array of words that should not be included in a sentence
+   * @param {Array} sentences An array of sentences (strings) that should be tested
+   * @returns {Array} A filtered array of sentences that never matched any of the words in the
+   * blacklist
+   */
   // eslint-disable-next-line arrow-body-style
-  applyBlackList: (blackList, sentences) => {
+  applyBlacklist: (blacklist, sentences) => {
     return sentences.filter((sent) => {
       let isValid = true;
-      blackList.forEach((item) => {
+      blacklist.forEach((item) => {
         if (sent.toLowerCase().includes(item)) {
           isValid = false;
         }
@@ -104,11 +123,18 @@ const businessCardParser = {
     });
   },
 
+  /**
+   * The applyWhitelist method takes a whitelist array of strings and an array of sentences and
+   * returns only the sentences that match any of the strings in the whitelist
+   * @param {Array} whitelist An array of words that should be included in a sentence
+   * @param {Array} sentences An array of sentences (strings) that should be tested
+   * @returns {Array} A filtered array of sentences that ever matched a word in the whitelist
+   */
   // eslint-disable-next-line arrow-body-style
-  applyWhiteList: (whiteList, sentences) => {
+  applyWhitelist: (whitelist, sentences) => {
     return sentences.filter((sent) => {
       let isMatch = false;
-      whiteList.forEach((item) => {
+      whitelist.forEach((item) => {
         if (sent.toLowerCase().includes(item)) {
           isMatch = true;
         }

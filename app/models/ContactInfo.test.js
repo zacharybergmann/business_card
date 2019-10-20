@@ -10,10 +10,6 @@ describe('ContactInfo class', () => {
     assert.equal(true, new ContactInfo('Test Name', '1234567890', 'test@test.com') instanceof ContactInfo);
   });
 
-  it('should throw if less or more than 3 arguments are passed to the constructor', () => {
-    assert.equal(1, 2);
-  });
-
   describe('getName method', () => {
     it('should exist and be a function', () => {
       const name = 'Test Name';
@@ -43,7 +39,7 @@ describe('ContactInfo class', () => {
       assert.equal('function', typeof exampleContactInfo.getPhoneNumber);
     });
 
-    it('should have a getPhoneNumber method that returns the input name', () => {
+    it('should have a getPhoneNumber method that returns the input phone number', () => {
       const name = 'Test Name';
       const phoneNumber = '1234567890';
       const emailAddress = 'test@test.com';
@@ -62,7 +58,7 @@ describe('ContactInfo class', () => {
       assert.equal('function', typeof exampleContactInfo.getEmailAddress);
     });
 
-    it('should have a getEmailAddress property that returns the input name', () => {
+    it('should have a getEmailAddress property that returns the input email address', () => {
       const name = 'Test Name';
       const phoneNumber = '1234567890';
       const emailAddress = 'test@test.com';
