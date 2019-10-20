@@ -18,3 +18,10 @@ Another way to use this application as a service would be to use the following c
 ```
 curl -XPOST http://localhost:8008/parseOcrText -i -H "Content-Type: application/json" -d '{"inputText": "ASYMMETRIK LTD\nMike Smith\nSenior Software Engineer\n(410)555-1234\nmsmith@asymmetrik.com\n"}'
 ```
+
+# To Test Application
+Node 10 LTS or later is required!
+```
+cd business_card
+npm run test
+```

@@ -42,8 +42,8 @@ app.post('/parseOcrText', (req, res) => {
       res.statusCode = 200;
       res.send({
         name: aContactInfo.getName(),
-        emailAddress: aContactInfo.emailAddress,
-        phoneNumber: aContactInfo.phoneNumber,
+        email: aContactInfo.emailAddress,
+        phone: aContactInfo.phoneNumber,
       });
     } else {
       throw Error('Invalid request format');
@@ -58,3 +58,5 @@ app.post('/parseOcrText', (req, res) => {
 app.get('/', (req, res) => {
   res.render('index', { title: 'OCR Text Parser', message: 'Hello there!', outputText: 'Testing output text here' });
 });
+
+module.exports = app;
