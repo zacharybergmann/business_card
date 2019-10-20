@@ -13,7 +13,7 @@ app.listen(PORT, (err) => {
   }
 });
 
-// app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(`${process.cwd()}/app/public`));
 app.use((req, res, next) => {
