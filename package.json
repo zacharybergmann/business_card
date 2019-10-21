@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node app/server/server.js",
     "lint": "eslint app/**/*.js",
-    "test": "cross-env BABEL_ENV=cjs nyc --reporter=text --reporter=html mocha \"app/**/*.test.js\" --require @babel/register"
+    "test": "cross-env BABEL_ENV=cjs nyc --reporter=text --reporter=html mocha \"app/**/*.test.js\" --require @babel/register --exit"
   },
   "repository": {
     "type": "git",
