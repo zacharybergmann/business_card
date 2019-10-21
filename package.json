@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node app/server/server.js",
     "lint": "eslint app/**/*.js",
-    "test": "cross-env BABEL_ENV=cjs nyc --reporter=text --reporter=html mocha \"app/**/*.test.js\" --require @babel/register --exit"
+    "test": "nyc --reporter=text --reporter=html mocha \"app/**/*.test.js\" --exit"
   },
   "repository": {
     "type": "git",
@@ -23,16 +23,11 @@
   },
   "homepage": "https://github.com/zacharybergmann/business_card#readme",
   "devDependencies": {
-    "@babel/cli": "^7.6.0",
-    "@babel/core": "^7.6.0",
-    "@babel/preset-env": "^7.6.0",
-    "@babel/register": "^7.6.0",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
     "cross-env": "^6.0.3",
     "eslint": "^6.5.1",
     "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.18.2",
     "jsdom": "^15.2.0",
     "jsdom-simulant": "^1.1.2",
     "mocha": "^6.2.1",
