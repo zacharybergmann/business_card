@@ -7,11 +7,13 @@ const phone = require('./resources/phone.json');
 // Job titles list initialized from
 // https://github.com/Brunty/faker-buzzword-job-titles/blob/develop/src/BuzzwordJobProvider.php
 const jobTitles = require('./resources/jobTitles.json');
+// Names list initialized from https://github.com/9b/heavy_pint
+const names = require('./resources/names.json');
 
 const config = {
   name: {
     blacklist: [...companies, ...jobTitles],
-    whitelist: [],
+    whitelist: [...names],
     regex: /^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/gm,
     clean: /.+/g,
   },
