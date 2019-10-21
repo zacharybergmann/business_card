@@ -43,7 +43,33 @@ describe('businessCardParser object', () => {
       assert.isFunction(businessCardParser.classifyTextArr);
     });
 
-    it('should call applyBlacklist once with ')
+    it('should call filterByRegex, applyBlacklist, applyWhitelist, and cleanString once for each field in the config', () => {
+      const sentences = [];
+      const filterByRegexStub = sinon.stub(businessCardParser, 'filterByRegex').returns([]);
+      const applyBlacklistStub = sinon.stub(businessCardParser, 'applyBlacklist').returns([]);
+      const applyWhitelistStub = sinon.stub(businessCardParser, 'applyWhitelist').returns([]);
+      const cleanStringStub = sinon.stub(businessCardParser, 'cleanString').returns('');
+      businessCardParser.classifyTextArr(sentences);
+      assert.equal(filterByRegexStub.callCount, 3);
+      assert.equal(applyBlacklistStub.callCount, 3);
+      assert.equal(applyWhitelistStub.callCount, 3);
+      assert.equal(cleanStringStub.callCount, 3);
+      filterByRegexStub.restore();
+      applyBlacklistStub.restore();
+      applyWhitelistStub.restore();
+      cleanStringStub.restore();
+    });
+
+    it('should return an object with all fields in the config as keys and the values as the result of the filters', () => {
+      const ocrText = 'ASYMMETRIK LTD\nMike Smith\nSenior Software Engineer\n(410)555-1234\nmsmith@asymmetrik.com';
+      const sentences = ocrText.split('\n');
+      const expected = {
+        name: 'Mike Smith',
+        email: 'msmith@asymmetrik.com',
+        phone: '4105551234',
+      };
+      assert.deepEqual(expected, businessCardParser.classifyTextArr(sentences));
+    });
   });
 
   describe('filterByRegex method', () => {
@@ -74,41 +100,31 @@ describe('businessCardParser object', () => {
     });
   });
 
-  describe('cleanEmail method', () => {
+  describe('cleanString method', () => {
     it('should be defined and be a function', () => {
-      assert.isDefined(businessCardParser.cleanEmail);
-      assert.isFunction(businessCardParser.cleanEmail);
+      assert.isDefined(businessCardParser.cleanString);
+      assert.isFunction(businessCardParser.cleanString);
     });
 
-    it('should return an empty string if the input string does not match email format', () => {
+    it('should return an empty string if the input string does not regex', () => {
       const input = 'test test.test test';
+      const regex = /[0-9]/g;
       const expected = '';
-      assert.equal(expected, businessCardParser.cleanEmail(input));
+      assert.equal(expected, businessCardParser.cleanString(input, regex));
     });
 
-    it('should return the email if the input string contains one', () => {
-      const input = 'test test@test.com test';
-      const expected = 'test@test.com';
-      assert.equal(expected, businessCardParser.cleanEmail(input));
-    });
-  });
-
-  describe('cleanPhone method', () => {
-    it('should be defined and be a function', () => {
-      assert.isDefined(businessCardParser.cleanPhone);
-      assert.isFunction(businessCardParser.cleanPhone);
-    });
-
-    it('should return an empty string if the input string does not match phone format', () => {
-      const input = 'test test.test test';
-      const expected = '';
-      assert.equal(expected, businessCardParser.cleanPhone(input));
-    });
-
-    it('should return a string with all non-digits removed', () => {
+    it('should return a string with a match when regex matches', () => {
       const input = 'abcx1./,!$)(U)($RF23';
+      const regex = /[abc]{3}/g;
+      const expected = 'abc';
+      assert.equal(expected, businessCardParser.cleanString(input, regex));
+    });
+
+    it('should return a string with all non-digits removed and concatenate the multiple matches', () => {
+      const input = 'abcx1./,!$)(U)($RF23';
+      const regex = /\d+/g;
       const expected = '123';
-      assert.equal(expected, businessCardParser.cleanPhone(input));
+      assert.equal(expected, businessCardParser.cleanString(input, regex));
     });
   });
 

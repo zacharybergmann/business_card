@@ -45,7 +45,7 @@ const businessCardParser = {
       if (whitelistResult.length > 0) {
         cleanResult = businessCardParser.cleanString(whitelistResult[0], config[field].clean);
       } else {
-        cleanResult = businessCardParser.cleanString(blacklistResult[0], config[field].clean);
+        cleanResult = businessCardParser.cleanString(blacklistResult[0] || '', config[field].clean);
       }
       return {
         ...agg,

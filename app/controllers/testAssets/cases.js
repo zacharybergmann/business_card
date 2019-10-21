@@ -1,5 +1,13 @@
 const cases = [
   {
+    input: 'ASYMMETRIK LTD\nMike Smith\nSenior Software Engineer\n(410)555-1234\nmsmith@asymmetrik.com',
+    output: {
+      name: 'Mike Smith',
+      email: 'msmith@asymmetrik.com',
+      phone: '4105551234',
+    },
+  },
+  {
     input: 'Foobar Technologies\nAnalytic Developer\nLisa Haung\n1234 Sentry Road\nColumbia, MD 12345\nPhone: 410-555-1234\nFax: 410-555-4321\nlisa.haung@foobartech.com',
     output: {
       name: 'Lisa Haung',
