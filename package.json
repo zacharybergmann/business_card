@@ -44,9 +44,6 @@
     "include": [
       "app/**/*.js"
     ],
-    "exclude": [
-      "app/**/*.test.js"
-    ],
     "branches": 80,
     "lines": 80,
     "functions": 80,
