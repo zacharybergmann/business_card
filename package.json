@@ -46,7 +46,8 @@
     ],
     "exclude": [
       "app/**/*Config.js",
-      "app/**/*.test.js"
+      "app/**/*.test.js",
+      "app/controllers/testAssets/*"
     ],
     "branches": 80,
     "lines": 80,

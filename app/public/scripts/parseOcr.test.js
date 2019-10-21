@@ -70,22 +70,60 @@ describe('parseOcr function', () => {
   });
 
   it('should append 1 ul and 3 li to div with class "outputTextContainer" page after fetch resolves', (done) => {
-    global.fetch = sinon.stub().resolves(JSON.stringify({
-      name: 'Mike Smith',
-      email: 'msmith@asymmetrik.com',
-      phone: '4105551234',
-    }));
+    // faking Response object returned from Fetch API
+    global.fetch = sinon.stub().resolves({
+      json: () => ({
+        name: 'Mike Smith',
+        email: 'msmith@asymmetrik.com',
+        phone: '4105551234',
+      }),
+    });
     global.alert = sinon.spy();
     simulant.fire(submitButton, event);
     // needed to get this test behind async fetch call in JS event loop
     setTimeout(() => {
       assert.equal(global.fetch.callCount, 1);
-      assert(global.document.getElementsByClassName('outputTextContainer')[0].children.length, 1);
-      // console.log(global.document.getElementsByClassName('ocrTextList')[0]);
-      // assert(global.document.getElementsByClassName('outputTextList')[0].children.length, 3);
+      assert.equal(global.alert.callCount, 0);
+      assert.equal(global.document.getElementsByClassName('outputTextContainer')[0].children.length, 1);
+      assert.equal(global.document.getElementsByClassName('outputTextList')[0].children.length, 3);
+      assert.equal(global.document.getElementsByClassName('outputTextList')[0].children[0].textContent, 'Name: Mike Smith');
+      assert.equal(global.document.getElementsByClassName('outputTextList')[0].children[1].textContent, 'Email: msmith@asymmetrik.com');
+      assert.equal(global.document.getElementsByClassName('outputTextList')[0].children[2].textContent, 'Phone: 4105551234');
       global.fetch = () => {};
       global.alert = () => {};
       done();
-    }, 1500);
+    }, 0);
+  });
+
+  it('should remove and re-append 1 ul and 3 li to div with class "outputTextContainer" page after fetch resolves', (done) => {
+    // faking Response object returned from Fetch API
+    global.fetch = sinon.stub().resolves({
+      json: () => ({
+        name: 'Lisa Haung',
+        email: 'lisa.haung@foobartech.com',
+        phone: '4105551234',
+      }),
+    });
+    global.alert = sinon.spy();
+    // confirm previous state still on DOM
+    assert.equal(global.document.getElementsByClassName('outputTextContainer')[0].children.length, 1);
+    assert.equal(global.document.getElementsByClassName('outputTextList')[0].children.length, 3);
+    assert.equal(global.document.getElementsByClassName('outputTextList')[0].children[0].textContent, 'Name: Mike Smith');
+    assert.equal(global.document.getElementsByClassName('outputTextList')[0].children[1].textContent, 'Email: msmith@asymmetrik.com');
+    assert.equal(global.document.getElementsByClassName('outputTextList')[0].children[2].textContent, 'Phone: 4105551234');
+    simulant.fire(submitButton, event);
+    // needed to get this test behind async fetch call in JS event loop
+    setTimeout(() => {
+      assert.equal(global.fetch.callCount, 1);
+      assert.equal(global.alert.callCount, 0);
+      assert.equal(global.document.getElementsByClassName('outputTextContainer')[0].children.length, 1);
+      assert.equal(global.document.getElementsByClassName('outputTextList')[0].children.length, 3);
+      assert.equal(global.document.getElementsByClassName('outputTextList')[0].children[0].textContent, 'Name: Lisa Haung');
+      assert.equal(global.document.getElementsByClassName('outputTextList')[0].children[1].textContent, 'Email: lisa.haung@foobartech.com');
+      assert.equal(global.document.getElementsByClassName('outputTextList')[0].children[2].textContent, 'Phone: 4105551234');
+      global.fetch = () => {};
+      global.alert = () => {};
+      done();
+    }, 0);
   });
 });

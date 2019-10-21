@@ -21,8 +21,8 @@ function parseOcr() {
     // iterate through the required fields (which are the keys on the response object)
     // and create the HTML to display each field and its value on the web page
     Object.keys(parsedResponse).forEach((field) => {
-      const node = document.createElement('li');
-      node.className = 'outputTextListItem';
+      const liNode = document.createElement('li');
+      liNode.className = 'outputTextListItem';
       // create a text node and set the text equal to the field name colon and the parsed value
       // returned from the server for that field
       const textNode = document.createTextNode(
@@ -30,8 +30,8 @@ function parseOcr() {
         `${field.charAt(0).toUpperCase() + field.slice(1)}: ${parsedResponse[field]}`,
       );
       // append the text to the li and li to ul
-      node.appendChild(textNode);
-      parentUlNode.appendChild(node);
+      liNode.appendChild(textNode);
+      parentUlNode.appendChild(liNode);
     });
 
     // now append the ul and all of its children to the div currently displayed on the web page
