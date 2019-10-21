@@ -1,10 +1,9 @@
-require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const businessCardParser = require('../controllers/businessCardParser');
 
-const PORT = process.env.PORT || 8000;
+const PORT = 8000;
 const app = express();
 
 // start the server listening on PORT
@@ -54,7 +53,7 @@ app.post('/parseOcrText', (req, res) => {
 
 // This endpoint renders and serves the web page
 app.get('/', (req, res) => {
-  res.status(200).render('index', { title: 'OCR Text Parser', message: 'Hello there!', outputText: 'Testing output text here' });
+  res.status(200).render('index', { title: 'OCR Text Parser' });
 });
 
 module.exports = app;
