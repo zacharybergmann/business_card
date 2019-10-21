@@ -1,16 +1,7 @@
 /**
  * The businessCard object holds methods related to parsing business card OCR text
  */
-
-const companiesList = require('../../resources/companies.json');
-const faxList = require('../../resources/fax.json');
-const statesList = require('../../resources/states.json');
-// Roads list initialized from https://pe.usps.com/text/pub28/28apc_002.htm
-const roadsList = require('../../resources/roads.json');
-const phoneList = require('../../resources/phone.json');
-// Job titles list initialized from
-// https://github.com/Brunty/faker-buzzword-job-titles/blob/develop/src/BuzzwordJobProvider.php
-const jobTitlesList = require('../../resources/jobTitles.json');
+const config = require('../../config');
 const ContactInfo = require('../models/ContactInfo');
 
 /**
@@ -27,45 +18,40 @@ const businessCardParser = {
    */
   getContactInfo: (doc) => {
     const sentences = doc.split('\n');
-    const { name, email, phone } = businessCardParser.classifyTextArr(sentences);
+    const { name, phone, email } = businessCardParser.classifyTextArr(sentences);
     return new ContactInfo(
-      name[0] || '',
-      businessCardParser.cleanPhone(phone[0] || ''),
-      businessCardParser.cleanEmail(email[0] || ''),
+      name,
+      phone,
+      email,
     );
   },
 
+  // eslint-disable-next-line arrow-body-style
   classifyTextArr: (sentences) => {
-    const nameRegex = /^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/gm;
-    // Phone number regex found at https://zapier.com/blog/extract-links-email-phone-regex/
-    const phoneRegex = /(?:(?:\+?([1-9]|[0-9][0-9]|[0-9][0-9][0-9])\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([0-9][1-9]|[0-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?/g;
-    // Email address regex follows RFC 5322 Official Standard found at https://emailregex.com/
-    // eslint-disable-next-line no-control-regex
-    const emailRegex = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/g;
-    const classifiedData = {
-      name: businessCardParser.filterByRegex(sentences, nameRegex),
-      email: businessCardParser.filterByRegex(sentences, emailRegex),
-      phone: businessCardParser.filterByRegex(sentences, phoneRegex),
-    };
-    // filter results based on whitelist/blacklist for field
-    classifiedData.phone = businessCardParser.applyBlacklist(
-      [].concat(faxList, statesList, roadsList),
-      classifiedData.phone,
-    );
-    classifiedData.name = businessCardParser.applyBlacklist(
-      [].concat(companiesList, jobTitlesList),
-      classifiedData.name,
-    );
-
-    const phoneWhiteResults = businessCardParser.applyWhitelist(
-      phoneList,
-      classifiedData.phone,
-    );
-
-    if (phoneWhiteResults.length > 0) {
-      classifiedData.phone = phoneWhiteResults;
-    }
-    return classifiedData;
+    // iterate through fields in the configuration
+    return Object.keys(config).reduce((agg, field) => {
+      // first apply regex, then blacklist, then whitelist
+      const regexResult = businessCardParser.filterByRegex(sentences, config[field].regex);
+      const blacklistResult = businessCardParser.applyBlacklist(
+        config[field].blacklist,
+        regexResult,
+      );
+      const whitelistResult = businessCardParser.applyWhitelist(
+        config[field].whitelist,
+        blacklistResult,
+      );
+      // if no whitelist matches, fall back to sentences that passed blacklist test
+      let cleanResult;
+      if (whitelistResult.length > 0) {
+        cleanResult = businessCardParser.cleanString(whitelistResult[0], config[field].clean);
+      } else {
+        cleanResult = businessCardParser.cleanString(blacklistResult[0], config[field].clean);
+      }
+      return {
+        ...agg,
+        [field]: cleanResult,
+      };
+    }, {});
   },
 
   /**
@@ -78,30 +64,18 @@ const businessCardParser = {
   filterByRegex: (sentences, regex) => sentences.filter((str) => (new RegExp(regex)).test(str)),
 
   /**
-   * The cleanEmail method captures only the email address from a string and returns it
-   * @param {String} str A string that should have an email address within it
-   * @returns {String} A string with all only the email address in it
+   * The cleanString method captures only a specific regex match or matches and returns
+   * the concatenated version of those matches
+   * @param {String} str A string to search for matches in
+   * @param {Object} cleanRegex A regex to match the string against
+   * @returns {String} A string of the concatenated matches
    */
-  cleanEmail: (str) => {
-    // grab email address only, drop anything else on that line
-    const emailCleanRegex = /\S+@\S+/;
-    const emailMatches = str.match(emailCleanRegex);
-    if (emailMatches === null) {
+  cleanString: (str, cleanRegex) => {
+    const matches = str.match(cleanRegex);
+    if (matches === null) {
       return '';
     }
-    return emailMatches[0];
-  },
-
-  /**
-   * The cleanPhone method removes all characters that are not numbers
-   * from the argument string
-   * @param {String} str A string that should have a phone number within it
-   * @returns {String} A string with all non-numerics and spaces removed,
-   * this should not be a string of only numbers
-   */
-  // eslint-disable-next-line arrow-body-style
-  cleanPhone: (str) => {
-    return str.replace(/[^0-9]/g, '');
+    return matches.join('');
   },
 
   /**
@@ -114,13 +88,21 @@ const businessCardParser = {
    */
   // eslint-disable-next-line arrow-body-style
   applyBlacklist: (blacklist, sentences) => {
+    // filter the array of sentences
     return sentences.filter((sent) => {
+      // default sentence as not having failed so far (isValid)
       let isValid = true;
-      blacklist.forEach((item) => {
-        if (sent.toLowerCase().includes(item)) {
+      // use for loop to allow early breakout
+      // iterate through words in blacklist
+      // eslint-disable-next-line no-plusplus
+      for (let i = 0; i < blacklist.length; i++) {
+        if (sent.toLowerCase().includes(blacklist[i])) {
+          // if a word in blacklist is found in sentence, ensure it is not put into output array
+          // and break loop
           isValid = false;
+          break;
         }
-      });
+      }
       return isValid;
     });
   },
@@ -134,13 +116,21 @@ const businessCardParser = {
    */
   // eslint-disable-next-line arrow-body-style
   applyWhitelist: (whitelist, sentences) => {
+    // filter the array of sentences
     return sentences.filter((sent) => {
+      // default sentence as not having a match yet
       let isMatch = false;
-      whitelist.forEach((item) => {
-        if (sent.toLowerCase().includes(item)) {
+      // use for loop to allow early breakout
+      // iterate through words in whitelist
+      // eslint-disable-next-line no-plusplus
+      for (let i = 0; i < whitelist.length; i++) {
+        if (sent.toLowerCase().includes(whitelist[i])) {
+          // if a word in whitelist is found in sentence, ensure it is put into output array
+          // and break loop
           isMatch = true;
+          break;
         }
-      });
+      }
       return isMatch;
     });
   },

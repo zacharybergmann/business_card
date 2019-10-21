@@ -25,3 +25,15 @@ Node 10 LTS or later is required!
 cd business_card
 npm run test
 ```
+
+Additional test cases can be added to the application by navigating to the app/controllers/testAssets/cases.js file and creating a new object for the case. The format should be:
+```
+{
+  input: 'YOUR INPUT\nOCR TEXT HERE',
+  output: {
+    name: 'NAME THAT SHOULD BE FOUND',
+    email: 'EMAIL THAT SHOULD BE FOUND',
+    phone: 'PHONE THAT SHOULD BE FOUND',
+  },
+}
+```

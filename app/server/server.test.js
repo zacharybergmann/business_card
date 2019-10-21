@@ -22,11 +22,11 @@ describe('Server Application', () => {
         });
     });
   });
-  describe('POST /parseOcrText', () => {
+  describe('POST /v1/parseOcrText', () => {
     it('it should return a 400 status and an object with an error message if an inputText field is not passed', (done) => {
       const body = {};
       server
-        .post('/parseOcrText')
+        .post('/v1/parseOcrText')
         .send(body)
         .end((err, res) => {
           assert.equal(res.status, 400);
@@ -40,7 +40,7 @@ describe('Server Application', () => {
         inputText: 'ASYMMETRIK LTD\nMike Smith\nSenior Software Engineer\n(410)555-1234\nmsmith@asymmetrik.com',
       };
       server
-        .post('/parseOcrText')
+        .post('/v1/parseOcrText')
         .send(body)
         .end((err, res) => {
           assert.equal(res.status, 200);

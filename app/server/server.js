@@ -34,7 +34,7 @@ app.set('view engine', 'pug');
 // This endpoint parses a business card OCR text string and returns an object that has a name,
 // emailAddress, and phoneNumber key-value pair. The request should have the following body:
 // { inputText: 'Parsable Business Card OCR Text Here' }
-app.post('/parseOcrText', (req, res) => {
+app.post('/v1/parseOcrText', (req, res) => {
   try {
     if (Object.prototype.hasOwnProperty.call(req.body, 'inputText')) {
       const aContactInfo = businessCardParser.getContactInfo(req.body.inputText);
