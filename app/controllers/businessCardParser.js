@@ -27,43 +27,43 @@ const businessCardParser = {
    */
   getContactInfo: (doc) => {
     const sentences = doc.split('\n');
-    const { name, emailAddress, phoneNumber } = businessCardParser.classifyTextArr(sentences);
+    const { name, email, phone } = businessCardParser.classifyTextArr(sentences);
     return new ContactInfo(
       name[0] || '',
-      businessCardParser.cleanPhoneNumber(phoneNumber[0] || ''),
-      businessCardParser.cleanEmailAddress(emailAddress[0] || ''),
+      businessCardParser.cleanPhone(phone[0] || ''),
+      businessCardParser.cleanEmail(email[0] || ''),
     );
   },
 
   classifyTextArr: (sentences) => {
     const nameRegex = /^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/gm;
     // Phone number regex found at https://zapier.com/blog/extract-links-email-phone-regex/
-    const phoneNumberRegex = /(?:(?:\+?([1-9]|[0-9][0-9]|[0-9][0-9][0-9])\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([0-9][1-9]|[0-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?/g;
+    const phoneRegex = /(?:(?:\+?([1-9]|[0-9][0-9]|[0-9][0-9][0-9])\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([0-9][1-9]|[0-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?/g;
     // Email address regex follows RFC 5322 Official Standard found at https://emailregex.com/
     // eslint-disable-next-line no-control-regex
-    const emailAddressRegex = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/g;
+    const emailRegex = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/g;
     const classifiedData = {
       name: businessCardParser.filterByRegex(sentences, nameRegex),
-      emailAddress: businessCardParser.filterByRegex(sentences, emailAddressRegex),
-      phoneNumber: businessCardParser.filterByRegex(sentences, phoneNumberRegex),
+      email: businessCardParser.filterByRegex(sentences, emailRegex),
+      phone: businessCardParser.filterByRegex(sentences, phoneRegex),
     };
     // filter results based on whitelist/blacklist for field
-    classifiedData.phoneNumber = businessCardParser.applyBlacklist(
+    classifiedData.phone = businessCardParser.applyBlacklist(
       [].concat(faxList, statesList, roadsList),
-      classifiedData.phoneNumber,
+      classifiedData.phone,
     );
     classifiedData.name = businessCardParser.applyBlacklist(
       [].concat(companiesList, jobTitlesList),
       classifiedData.name,
     );
 
-    const phoneNumberWhiteResults = businessCardParser.applyWhitelist(
+    const phoneWhiteResults = businessCardParser.applyWhitelist(
       phoneList,
-      classifiedData.phoneNumber,
+      classifiedData.phone,
     );
 
-    if (phoneNumberWhiteResults.length > 0) {
-      classifiedData.phoneNumber = phoneNumberWhiteResults;
+    if (phoneWhiteResults.length > 0) {
+      classifiedData.phone = phoneWhiteResults;
     }
     return classifiedData;
   },
@@ -78,11 +78,11 @@ const businessCardParser = {
   filterByRegex: (sentences, regex) => sentences.filter((str) => (new RegExp(regex)).test(str)),
 
   /**
-   * The cleanEmailAddress method captures only the email address from a string and returns it
+   * The cleanEmail method captures only the email address from a string and returns it
    * @param {String} str A string that should have an email address within it
    * @returns {String} A string with all only the email address in it
    */
-  cleanEmailAddress: (str) => {
+  cleanEmail: (str) => {
     // grab email address only, drop anything else on that line
     const emailCleanRegex = /\S+@\S+/;
     const emailMatches = str.match(emailCleanRegex);
@@ -93,14 +93,14 @@ const businessCardParser = {
   },
 
   /**
-   * The cleanPhoneNumber method removes all characters that are not numbers
+   * The cleanPhone method removes all characters that are not numbers
    * from the argument string
    * @param {String} str A string that should have a phone number within it
    * @returns {String} A string with all non-numerics and spaces removed,
    * this should not be a string of only numbers
    */
   // eslint-disable-next-line arrow-body-style
-  cleanPhoneNumber: (str) => {
+  cleanPhone: (str) => {
     return str.replace(/[^0-9]/g, '');
   },
 
