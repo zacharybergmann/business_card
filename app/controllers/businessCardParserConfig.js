@@ -1,12 +1,12 @@
-const companies = require('./resources/companies.json');
-const fax = require('./resources/fax.json');
-const states = require('./resources/states.json');
+const companies = require('../../resources/companies.json');
+const fax = require('../../resources/fax.json');
+const states = require('../../resources/states.json');
 // Roads list initialized from https://pe.usps.com/text/pub28/28apc_002.htm
-const roads = require('./resources/roads.json');
-const phone = require('./resources/phone.json');
+const roads = require('../../resources/roads.json');
+const phone = require('../../resources/phone.json');
 // Job titles list initialized from
 // https://github.com/Brunty/faker-buzzword-job-titles/blob/develop/src/BuzzwordJobProvider.php
-const jobTitles = require('./resources/jobTitles.json');
+const jobTitles = require('../../resources/jobTitles.json');
 
 const config = {
   name: {

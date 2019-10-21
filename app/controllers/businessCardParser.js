@@ -1,7 +1,7 @@
 /**
  * The businessCard object holds methods related to parsing business card OCR text
  */
-const config = require('../../config');
+const config = require('./businessCardParserConfig');
 const ContactInfo = require('../models/ContactInfo');
 
 /**

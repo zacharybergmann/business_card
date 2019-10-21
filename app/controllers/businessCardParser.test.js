@@ -60,12 +60,23 @@ describe('businessCardParser object', () => {
       cleanStringStub.restore();
     });
 
-    it('should return an object with all fields in the config as keys and the values as the result of the filters', () => {
+    it('should return an object with all fields in the config as keys and the values as the result of the filters (whitelist miss)', () => {
       const ocrText = 'ASYMMETRIK LTD\nMike Smith\nSenior Software Engineer\n(410)555-1234\nmsmith@asymmetrik.com';
       const sentences = ocrText.split('\n');
       const expected = {
         name: 'Mike Smith',
         email: 'msmith@asymmetrik.com',
+        phone: '4105551234',
+      };
+      assert.deepEqual(expected, businessCardParser.classifyTextArr(sentences));
+    });
+
+    it('should return an object with all fields in the config as keys and the values as the result of the filters (whitelist hit)', () => {
+      const ocrText = 'Foobar Technologies\nAnalytic Developer\nLisa Haung\n1234 Sentry Road\nColumbia, MD 12345\nPhone: 410-555-1234\nFax: 410-555-4321\nlisa.haung@foobartech.com';
+      const sentences = ocrText.split('\n');
+      const expected = {
+        name: 'Lisa Haung',
+        email: 'lisa.haung@foobartech.com',
         phone: '4105551234',
       };
       assert.deepEqual(expected, businessCardParser.classifyTextArr(sentences));

@@ -8,6 +8,7 @@ const app = express();
 
 // start the server listening on PORT
 app.listen(PORT, (err) => {
+  /* istanbul ignore next */
   if (!err) {
     process.stdout.write(`Server is running on port ${PORT}!\n`);
   }
