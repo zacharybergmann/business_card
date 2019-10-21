@@ -29,9 +29,9 @@ const businessCardParser = {
     const sentences = doc.split('\n');
     const { name, emailAddress, phoneNumber } = businessCardParser.classifyTextArr(sentences);
     return new ContactInfo(
-      name[0],
-      businessCardParser.cleanPhoneNumber(phoneNumber[0]),
-      businessCardParser.cleanEmailAddress(emailAddress[0]),
+      name[0] || '',
+      businessCardParser.cleanPhoneNumber(phoneNumber[0] || ''),
+      businessCardParser.cleanEmailAddress(emailAddress[0] || ''),
     );
   },
 
@@ -84,7 +84,7 @@ const businessCardParser = {
     // grab email address only, drop anything else on that line
     const emailCleanRegex = /\S+@\S+/;
     const emailMatches = str.match(emailCleanRegex);
-    if (emailMatches.length === 0) {
+    if (emailMatches === null) {
       return '';
     }
     return emailMatches[0];

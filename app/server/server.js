@@ -39,8 +39,7 @@ app.post('/parseOcrText', (req, res) => {
   try {
     if (Object.prototype.hasOwnProperty.call(req.body, 'inputText')) {
       const aContactInfo = businessCardParser.getContactInfo(req.body.inputText);
-      res.statusCode = 200;
-      res.send({
+      res.status(200).send({
         name: aContactInfo.getName(),
         email: aContactInfo.emailAddress,
         phone: aContactInfo.phoneNumber,
@@ -49,14 +48,13 @@ app.post('/parseOcrText', (req, res) => {
       throw Error('Invalid request format');
     }
   } catch (err) {
-    res.status = 400;
-    res.send({ error: err.message });
+    res.status(400).send({ error: err.message });
   }
 });
 
 // This endpoint renders and serves the web page
 app.get('/', (req, res) => {
-  res.render('index', { title: 'OCR Text Parser', message: 'Hello there!', outputText: 'Testing output text here' });
+  res.status(200).render('index', { title: 'OCR Text Parser', message: 'Hello there!', outputText: 'Testing output text here' });
 });
 
 module.exports = app;
