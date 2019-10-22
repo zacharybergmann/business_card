@@ -12,18 +12,13 @@ const businessCardParser = {
   /**
    * The getContactInfo function takes non-homogeneous business card text and parses specific
    * extracted fields into a contactInfo object
-   * @param {String} doc A sequence of characters that should contain a name, phoneNumber,
-   * and emailAddress
+   * @param {String} doc A sequence of characters that should contain a name, phone, and email
    * @returns {ContactInfo} A ContactInfo instance that contains the desired information
    */
   getContactInfo: (doc) => {
     const sentences = doc.split('\n');
     const { name, phone, email } = businessCardParser.classifyTextArr(sentences);
-    return new ContactInfo(
-      name,
-      phone,
-      email,
-    );
+    return new ContactInfo(name, phone, email);
   },
 
   // eslint-disable-next-line arrow-body-style
@@ -90,15 +85,11 @@ const businessCardParser = {
   applyBlacklist: (blacklist, sentences) => {
     // filter the array of sentences
     return sentences.filter((sent) => {
-      // default sentence as not having failed so far (isValid)
       let isValid = true;
-      // use for loop to allow early breakout
-      // iterate through words in blacklist
+      // use for loop to allow early breakout, iterate through words in blacklist
       // eslint-disable-next-line no-plusplus
       for (let i = 0; i < blacklist.length; i++) {
         if (sent.toLowerCase().includes(blacklist[i])) {
-          // if a word in blacklist is found in sentence, ensure it is not put into output array
-          // and break loop
           isValid = false;
           break;
         }
@@ -118,15 +109,11 @@ const businessCardParser = {
   applyWhitelist: (whitelist, sentences) => {
     // filter the array of sentences
     return sentences.filter((sent) => {
-      // default sentence as not having a match yet
       let isMatch = false;
-      // use for loop to allow early breakout
-      // iterate through words in whitelist
+      // use for loop to allow early breakout, iterate through words in whitelist
       // eslint-disable-next-line no-plusplus
       for (let i = 0; i < whitelist.length; i++) {
         if (sent.toLowerCase().includes(whitelist[i])) {
-          // if a word in whitelist is found in sentence, ensure it is put into output array
-          // and break loop
           isMatch = true;
           break;
         }
