@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
+const cors = require('cors');
 
 const PORT = 8000;
 const app = express();
@@ -11,6 +12,7 @@ const routes = require('./routes/routes');
 app.use(helmet());
 app.use(helmet.hidePoweredBy());
 app.disable('x-powered-by');
+app.use(cors());
 // parse the body of all incoming requests for easier access
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
