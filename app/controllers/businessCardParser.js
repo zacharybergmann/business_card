@@ -17,18 +17,18 @@ const businessCardParser = {
    */
   getContactInfo: (doc) => {
     const sentences = doc.split('\n');
-    const { name, phone, email } = businessCardParser.classifyTextArr(sentences);
+    const { name, phone, email } = businessCardParser.classifySentences(sentences);
     return new ContactInfo(name, phone, email);
   },
 
   /**
-   * The classifyTextArr method takes an array of sentences and applies various filters and regex
+   * The classifySentences method takes an array of sentences and applies various filters and regex
    * to match a field to its classified value
    * @param {Array} sentences An array of lines that could contain field information
    * @returns {Object} An object of field-value pairs from classifying the sentences
    */
   // eslint-disable-next-line arrow-body-style
-  classifyTextArr: (sentences) => {
+  classifySentences: (sentences) => {
     // iterate through fields in the configuration
     return config.map((fieldObj) => fieldObj.field).reduce((agg, field, index) => {
       // apply in order: matchByCompare, regex, blacklist, whitelist

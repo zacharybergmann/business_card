@@ -7,12 +7,18 @@ const cors = require('cors');
 const PORT = 8000;
 const app = express();
 const routes = require('./routes/routes');
+const corsOptions = {
+  origin: '*',
+  methods: 'GET,POST',
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+  allowedHeaders: ['Content-Type, Authorization, Content-Length, X-Requested-With'],
+};
 
 //////////////////////////// START MIDDLEWARE ///////////////////////////////
+// ExpressJS best practices https://expressjs.com/en/advanced/best-practice-security.html
 app.use(helmet());
-app.use(helmet.hidePoweredBy());
-app.disable('x-powered-by');
-app.use(cors());
+app.use(cors(corsOptions));
 // parse the body of all incoming requests for easier access
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

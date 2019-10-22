@@ -17,31 +17,31 @@ describe('businessCardParser object', () => {
       assert.isFunction(businessCardParser.getContactInfo);
     });
 
-    it('should call classifyTextArr method with the split doc string when empty and return a ContactInfo instance', () => {
+    it('should call classifySentences method with the split doc string when empty and return a ContactInfo instance', () => {
       const aSent = '';
-      const classifyTextArrSpy = sinon.stub(businessCardParser, 'classifyTextArr').returns({ name: [''], phone: [''], email: [''] });
+      const classifySentencesSpy = sinon.stub(businessCardParser, 'classifySentences').returns({ name: [''], phone: [''], email: [''] });
       const returnVal = businessCardParser.getContactInfo(aSent);
-      assert.equal(classifyTextArrSpy.callCount, 1);
-      assert.deepEqual(classifyTextArrSpy.args[0][0], ['']);
+      assert.equal(classifySentencesSpy.callCount, 1);
+      assert.deepEqual(classifySentencesSpy.args[0][0], ['']);
       assert.equal(returnVal instanceof ContactInfo, true);
-      classifyTextArrSpy.restore();
+      classifySentencesSpy.restore();
     });
 
-    it('should call classifyTextArr method with the split doc string when has length and return a ContactInfo instance', () => {
+    it('should call classifySentences method with the split doc string when has length and return a ContactInfo instance', () => {
       const aSent = 'A test sentence\nA second test sentence\nA third test sentence';
-      const classifyTextArrSpy = sinon.stub(businessCardParser, 'classifyTextArr').returns({ name: aSent.split('\n'), phone: [''], email: [''] });
+      const classifySentencesSpy = sinon.stub(businessCardParser, 'classifySentences').returns({ name: aSent.split('\n'), phone: [''], email: [''] });
       const returnVal = businessCardParser.getContactInfo(aSent);
-      assert.deepEqual(classifyTextArrSpy.args[0][0], aSent.split('\n'));
-      assert.equal(classifyTextArrSpy.callCount, 1);
+      assert.deepEqual(classifySentencesSpy.args[0][0], aSent.split('\n'));
+      assert.equal(classifySentencesSpy.callCount, 1);
       assert.equal(returnVal instanceof ContactInfo, true);
-      classifyTextArrSpy.restore();
+      classifySentencesSpy.restore();
     });
   });
 
-  describe('classifyTextArr method', () => {
+  describe('classifySentences method', () => {
     it('should be defined and be a function', () => {
-      assert.isDefined(businessCardParser.classifyTextArr);
-      assert.isFunction(businessCardParser.classifyTextArr);
+      assert.isDefined(businessCardParser.classifySentences);
+      assert.isFunction(businessCardParser.classifySentences);
     });
 
     it('should call applyMatchByCompare, filterByRegex, applyBlacklist, applyWhitelist, and cleanString 3 times each', () => {
@@ -51,7 +51,7 @@ describe('businessCardParser object', () => {
       const applyBlacklistStub = sinon.stub(businessCardParser, 'applyBlacklist').returns([]);
       const applyWhitelistStub = sinon.stub(businessCardParser, 'applyWhitelist').returns([]);
       const cleanStringStub = sinon.stub(businessCardParser, 'cleanString').returns('');
-      businessCardParser.classifyTextArr(sentences);
+      businessCardParser.classifySentences(sentences);
       assert.equal(applyMatchByCompareStub.callCount, 0);
       assert.equal(filterByRegexStub.callCount, 3);
       assert.equal(applyBlacklistStub.callCount, 3);
@@ -82,7 +82,7 @@ describe('businessCardParser object', () => {
       cleanStringStub.onFirstCall().returns('msmith@asymmetrik.com');
       cleanStringStub.onSecondCall().returns('4105551234');
       cleanStringStub.onThirdCall().returns('Mike Smith');
-      businessCardParser.classifyTextArr(sentences);
+      businessCardParser.classifySentences(sentences);
       assert.equal(applyMatchByCompareStub.callCount, 1);
       assert.equal(filterByRegexStub.callCount, 2);
       assert.equal(applyBlacklistStub.callCount, 2);

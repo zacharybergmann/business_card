@@ -3,13 +3,6 @@ const businessCardParser = require('../controllers/businessCardParser');
 
 const router = express.Router();
 
-router.options('/*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
-  return res.sendStatus(200);
-});
-
 // This endpoint parses a business card OCR text string and returns an object that has a name,
 // emailAddress, and phoneNumber key-value pair. The request should have the following body:
 // { inputText: 'Parsable Business Card OCR Text Here' }

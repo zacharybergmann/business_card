@@ -18,7 +18,7 @@ describe('Server Application', () => {
         .end((err, res) => {
           assert(res.status, 200);
           assert.equal(res.header['access-control-allow-origin'], '*');
-          assert.equal(res.header['access-control-allow-methods'], 'GET,POST,OPTIONS');
+          assert.equal(res.header['access-control-allow-methods'], 'GET,POST');
           assert.equal(res.header['access-control-allow-headers'], 'Content-Type, Authorization, Content-Length, X-Requested-With');
           done();
         });
