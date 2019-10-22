@@ -64,26 +64,35 @@ describe('businessCardParser object', () => {
       cleanStringStub.restore();
     });
 
-    it('should return an object with all fields in the config as keys and the values as the result of the filters (whitelist miss)', () => {
+    it('should call applyMatchByCompare, filterByRegex, applyBlacklist, applyWhitelist, and cleanString based on config fields', () => {
       const ocrText = 'ASYMMETRIK LTD\nMike Smith\nSenior Software Engineer\n(410)555-1234\nmsmith@asymmetrik.com';
       const sentences = ocrText.split('\n');
-      const expected = {
-        name: 'Mike Smith',
-        email: 'msmith@asymmetrik.com',
-        phone: '4105551234',
-      };
-      assert.deepEqual(expected, businessCardParser.classifyTextArr(sentences));
-    });
-
-    it('should return an object with all fields in the config as keys and the values as the result of the filters (whitelist hit)', () => {
-      const ocrText = 'Foobar Technologies\nAnalytic Developer\nLisa Haung\n1234 Sentry Road\nColumbia, MD 12345\nPhone: 410-555-1234\nFax: 410-555-4321\nlisa.haung@foobartech.com';
-      const sentences = ocrText.split('\n');
-      const expected = {
-        name: 'Lisa Haung',
-        email: 'lisa.haung@foobartech.com',
-        phone: '4105551234',
-      };
-      assert.deepEqual(expected, businessCardParser.classifyTextArr(sentences));
+      const applyMatchByCompareStub = sinon.stub(businessCardParser, 'applyMatchByCompare');
+      applyMatchByCompareStub.returns(['Mike Smith']);
+      const filterByRegexStub = sinon.stub(businessCardParser, 'filterByRegex');
+      filterByRegexStub.withArgs(sentences, config[0].regex).returns([sentences[4]]);
+      filterByRegexStub.withArgs(sentences, config[1].regex).returns([sentences[3]]);
+      const applyBlacklistStub = sinon.stub(businessCardParser, 'applyBlacklist');
+      applyBlacklistStub.onFirstCall().returns([sentences[4]]);
+      applyBlacklistStub.onSecondCall().returns([sentences[3]]);
+      const applyWhitelistStub = sinon.stub(businessCardParser, 'applyWhitelist');
+      applyWhitelistStub.onFirstCall().returns([]);
+      applyWhitelistStub.onSecondCall().returns([]);
+      const cleanStringStub = sinon.stub(businessCardParser, 'cleanString');
+      cleanStringStub.onFirstCall().returns('msmith@asymmetrik.com');
+      cleanStringStub.onSecondCall().returns('4105551234');
+      cleanStringStub.onThirdCall().returns('Mike Smith');
+      businessCardParser.classifyTextArr(sentences);
+      assert.equal(applyMatchByCompareStub.callCount, 1);
+      assert.equal(filterByRegexStub.callCount, 2);
+      assert.equal(applyBlacklistStub.callCount, 2);
+      assert.equal(applyWhitelistStub.callCount, 2);
+      assert.equal(cleanStringStub.callCount, 3);
+      applyMatchByCompareStub.restore();
+      filterByRegexStub.restore();
+      applyBlacklistStub.restore();
+      applyWhitelistStub.restore();
+      cleanStringStub.restore();
     });
   });
 
