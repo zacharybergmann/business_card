@@ -1,5 +1,6 @@
 const { assert } = require('chai');
 const sinon = require('sinon');
+const config = require('./businessCardParserConfig');
 const businessCardParser = require('./businessCardParser');
 const ContactInfo = require('../models/ContactInfo');
 const cases = require('./testAssets/cases');
@@ -43,17 +44,20 @@ describe('businessCardParser object', () => {
       assert.isFunction(businessCardParser.classifyTextArr);
     });
 
-    it('should call filterByRegex, applyBlacklist, applyWhitelist, and cleanString once for each field in the config', () => {
+    it('should call applyMatchByCompare, filterByRegex, applyBlacklist, applyWhitelist, and cleanString 3 times each', () => {
       const sentences = [];
+      const applyMatchByCompareStub = sinon.stub(businessCardParser, 'applyMatchByCompare').returns([]);
       const filterByRegexStub = sinon.stub(businessCardParser, 'filterByRegex').returns([]);
       const applyBlacklistStub = sinon.stub(businessCardParser, 'applyBlacklist').returns([]);
       const applyWhitelistStub = sinon.stub(businessCardParser, 'applyWhitelist').returns([]);
       const cleanStringStub = sinon.stub(businessCardParser, 'cleanString').returns('');
       businessCardParser.classifyTextArr(sentences);
+      assert.equal(applyMatchByCompareStub.callCount, 0);
       assert.equal(filterByRegexStub.callCount, 3);
       assert.equal(applyBlacklistStub.callCount, 3);
       assert.equal(applyWhitelistStub.callCount, 3);
       assert.equal(cleanStringStub.callCount, 3);
+      applyMatchByCompareStub.restore();
       filterByRegexStub.restore();
       applyBlacklistStub.restore();
       applyWhitelistStub.restore();
@@ -80,6 +84,61 @@ describe('businessCardParser object', () => {
         phone: '4105551234',
       };
       assert.deepEqual(expected, businessCardParser.classifyTextArr(sentences));
+    });
+  });
+
+  describe('stringCommonality method', () => {
+    it('should be defined and be a function', () => {
+      assert.isDefined(businessCardParser.stringCommonality);
+      assert.isFunction(businessCardParser.stringCommonality);
+    });
+
+    it('should return 0 when no substrings of the first string exist in the second string', () => {
+      const str1 = 'The cat and the dog';
+      const str2 = 'test';
+      assert.equal(businessCardParser.stringCommonality(str1, str2), 0);
+    });
+
+    it('should return 1 when all of the second string can be found in the first string substrings', () => {
+      const str1 = 'John Doe';
+      const str2 = 'johndoe';
+      assert.equal(businessCardParser.stringCommonality(str1, str2), 1);
+    });
+
+    it('should return 1 when all of the second string can be found in the first string substrings', () => {
+      const str1 = 'John Doe';
+      const str2 = 'jdoe';
+      const expected = 0.75;
+      assert.equal(businessCardParser.stringCommonality(str1, str2), expected);
+    });
+  });
+
+  describe('applyMatchByCompare method', () => {
+    it('should be defined and be a function', () => {
+      assert.isDefined(businessCardParser.applyMatchByCompare);
+      assert.isFunction(businessCardParser.applyMatchByCompare);
+    });
+
+    it('should return a single string in an array if it passes a threshold match', () => {
+      const sentences = [
+        'Cat dog',
+        'Elephant industries',
+        'Phone: 123-123-4567',
+      ];
+      const matchStr = 'catdog';
+      const thresold = 0.5;
+      assert.deepEqual(businessCardParser.applyMatchByCompare(sentences, matchStr, thresold), ['Cat dog']);
+    });
+
+    it('should return a single string in an array if it passes a threshold match', () => {
+      const sentences = [
+        'Cat test',
+        'Elephant industries',
+        'Phone: 123-123-4567',
+      ];
+      const matchStr = 'catdoge';
+      const thresold = 0.5;
+      assert.deepEqual(businessCardParser.applyMatchByCompare(sentences, matchStr, thresold), []);
     });
   });
 
